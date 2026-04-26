@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Detail — PriceCheck AU</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --coles: #e2001a;
+      --coles-light: #fff0f1;
+      --woolworths: #007b3e;
+      --woolworths-light: #f0fff6;
+      --win: #ffd700;
+      --bg: #f4f5f7;
+      --card: #fff;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      transition: all 0.15s;
+    }
+    .back-btn:hover { color: var(--text); border-color: #999; }
+
+    .logo { font-size: 1.1rem; font-weight: 700; color: var(--text); text-decoration: none; }
+
+    /* ── Layout ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .hero-emoji { font-size: 4rem; line-height: 1; flex-shrink: 0; }
+
+    .hero-info { flex: 1; min-width: 0; }
+
+    .hero-category {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: #ede9fe;
+      color: #6d28d9;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-name { font-size: 1.6rem; font-weight: 800; line-height: 1.2; margin-bottom: 6px; }
+    .hero-unit { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
+    .hero-desc { font-size: 0.95rem; line-height: 1.65; color: #374151; }
+
+    /* ── Price comparison strip ── */
+    .price-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .price-tile {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      position: relative;
+    }
+    .price-tile.winner-tile {
+      border-color: #fbbf24;
+      background: linear-gradient(135deg, #fffbeb, #fef9c3);
+    }
+    .price-tile.coles-tile { border-top: 4px solid var(--coles); }
+    .price-tile.woolworths-tile { border-top: 4px solid var(--woolworths); }
+
+    .tile-store { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .tile-store.coles { color: var(--coles); }
+    .tile-store.woolworths { color: var(--woolworths); }
+    .tile-price { font-size: 2.2rem; font-weight: 800; }
+    .tile-verdict { font-size: 0.78rem; margin-top: 6px; }
+    .tile-verdict.cheap { color: #16a34a; font-weight: 600; }
+    .tile-verdict.expensive { color: var(--muted); }
+    .tile-verdict.tie { color: var(--muted); }
+
+    .best-badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      background: #fbbf24;
+      color: #78350f;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Price history chart ── */
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 20px;
+    }
+
+    .section-heading {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chart-outer { width: 100%; overflow: hidden; border-radius: 8px; background: #f9fafb; border: 1px solid var(--border); }
+    .chart-outer svg { display: block; width: 100%; }
+
+    .chart-legend { display: flex; gap: 16px; margin-top: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 500; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── Stat row ── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat-cell {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .stat-cell .sc-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat-cell .sc-val { font-size: 1.05rem; font-weight: 700; margin-top: 3px; }
+    .stat-cell.sc-coles .sc-val { color: var(--coles); }
+    .stat-cell.sc-woolworths .sc-val { color: var(--woolworths); }
+
+    /* ── Tabs ── */
+    .tabs-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .tab-nav {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      flex-shrink: 0;
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: #6366f1; border-bottom-color: #6366f1; }
+
+    .tab-panel { display: none; padding: 24px; }
+    .tab-panel.active { display: block; }
+
+    /* Nutrition table */
+    .nutrition-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .nutrition-table thead th {
+      text-align: right;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--text);
+      background: #f9fafb;
+    }
+    .nutrition-table thead th:first-child { text-align: left; }
+    .nutrition-table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: right;
+    }
+    .nutrition-table td:first-child { text-align: left; }
+    .nutrition-table tr:last-child td { border-bottom: none; }
+    .nutrition-table tr.indent td:first-child { padding-left: 24px; color: var(--muted); }
+
+    .serving-note { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
+
+    /* Allergen chips */
+    .chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .chip-danger { background: #fee2e2; color: #991b1b; }
+    .chip-warn   { background: #fef3c7; color: #92400e; }
+    .chip-safe   { background: #dcfce7; color: #166534; }
+
+    .field-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
+
+    .ingredients-box {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #374151;
+    }
+
+    .section-divider { margin: 20px 0; border: none; border-top: 1px solid var(--border); }
+
+    /* Alternatives */
+    .alt-list { display: flex; flex-direction: column; gap: 10px; }
+    .alt-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .alt-name { font-weight: 600; font-size: 0.9rem; }
+    .alt-note { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .alt-price { font-weight: 700; font-size: 1rem; white-space: nowrap; }
+
+    /* Where to buy */
+    .wtb-list { display: flex; flex-direction: column; gap: 10px; }
+    .wtb-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      gap: 12px;
+    }
+    .wtb-item.wtb-coles       { border-left: 4px solid var(--coles);       background: var(--coles-light); }
+    .wtb-item.wtb-woolworths  { border-left: 4px solid var(--woolworths);   background: var(--woolworths-light); }
+    .wtb-item.wtb-aldi        { border-left: 4px solid #005a9e;             background: #eff6ff; }
+    .wtb-item.wtb-iga         { border-left: 4px solid #e07b00;             background: #fff7ed; }
+
+    .wtb-left { display: flex; align-items: center; gap: 12px; }
+    .wtb-store { font-weight: 700; font-size: 0.95rem; }
+    .wtb-aisle { font-size: 0.78rem; color: var(--muted); }
+    .wtb-price { font-weight: 800; font-size: 1.1rem; }
+
+    .stock-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .stock-dot.in  { background: #22c55e; }
+    .stock-dot.out { background: #ef4444; }
+
+    .na-box {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .disclaimer {
+      margin-top: 24px;
+      padding: 12px 16px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: #92400e;
+      line-height: 1.5;
+    }
+
+    /* Save to Catalog */
+    .save-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 20px;
+      background: #16a34a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .save-btn:hover  { background: #15803d; }
+    .save-btn:disabled { background: #86efac; cursor: default; }
+    .save-btn.saved  { background: #6366f1; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1a2e;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      transition: transform 0.25s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 560px) {
+      .hero { flex-direction: column; gap: 12px; }
+      .hero-emoji { font-size: 2.8rem; }
+      .hero-name { font-size: 1.3rem; }
+      .price-strip { grid-template-columns: 1fr; }
+      .tile-price { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-btn">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    Back
+  </a>
+  <a href="index.html" class="logo">🛒 PriceCheck AU</a>
+</header>
+
+<main id="app">
+  <p style="color:var(--muted);padding:60px 0;text-align:center;">Loading product…</p>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+// ── Seeded RNG + history (same logic as index.html) ────────────────────────
+function seededRand(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+function strHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function generateHistory(product, weeks = 12) {
+  const rnd = seededRand(strHash(product.name));
+  const history = [];
+  const now = new Date();
+  let cPrice = product.coles, wPrice = product.woolworths;
+  for (let i = weeks - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i * 7);
+    const label = d.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
+    const cDelta = (rnd() - 0.5) * 0.16 * product.coles;
+    const wDelta = (rnd() - 0.5) * 0.16 * product.woolworths;
+    const cHist = i === 0 ? product.coles : Math.max(0.10, Math.round((cPrice + cDelta) * 20) / 20);
+    const wHist = i === 0 ? product.woolworths : Math.max(0.10, Math.round((wPrice + wDelta) * 20) / 20);
+    cPrice = cHist; wPrice = wHist;
+    history.push({ label, coles: cHist, woolworths: wHist });
+  }
+  return history;
+}
+
+// ── SVG chart ──────────────────────────────────────────────────────────────
+function buildChart(history) {
+  const W = 780, H = 200;
+  const PAD = { top: 16, right: 16, bottom: 34, left: 48 };
+  const iW = W - PAD.left - PAD.right, iH = H - PAD.top - PAD.bottom;
+  const allP = history.flatMap(h => [h.coles, h.woolworths]);
+  const minP = Math.min(...allP) * 0.92, maxP = Math.max(...allP) * 1.08;
+  const xS = i => PAD.left + (i / (history.length - 1)) * iW;
+  const yS = v => PAD.top + iH - ((v - minP) / (maxP - minP)) * iH;
+  const line = (key) => history.map((h, i) => `${i===0?"M":"L"} ${xS(i).toFixed(1)} ${yS(h[key]).toFixed(1)}`).join(" ");
+  const area = (key) => {
+    const l = history.map((h,i)=>`${i===0?"M":"L"} ${xS(i).toFixed(1)} ${yS(h[key]).toFixed(1)}`).join(" ");
+    return `${l} L ${xS(history.length-1).toFixed(1)} ${(PAD.top+iH).toFixed(1)} L ${PAD.left.toFixed(1)} ${(PAD.top+iH).toFixed(1)} Z`;
+  };
+  const ticks = 4;
+  const grid = Array.from({length: ticks+1}, (_,i) => {
+    const v = minP + (i/ticks)*(maxP-minP);
+    const y = yS(v).toFixed(1);
+    return `<line x1="${PAD.left}" y1="${y}" x2="${W-PAD.right}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>
+            <text x="${PAD.left-6}" y="${y}" text-anchor="end" dominant-baseline="middle" fill="#9ca3af" font-size="11">$${v.toFixed(2)}</text>`;
+  }).join("");
+  const xlabels = history.map((h,i) => {
+    if (i % 2 !== 0) return "";
+    return `<text x="${xS(i).toFixed(1)}" y="${H-6}" text-anchor="middle" fill="#9ca3af" font-size="11">${h.label}</text>`;
+  }).join("");
+  const li = history.length - 1;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+    <defs>
+      <linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e2001a" stop-opacity="0.15"/><stop offset="100%" stop-color="#e2001a" stop-opacity="0.01"/></linearGradient>
+      <linearGradient id="gw" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#007b3e" stop-opacity="0.15"/><stop offset="100%" stop-color="#007b3e" stop-opacity="0.01"/></linearGradient>
+    </defs>
+    ${grid}${xlabels}
+    <path d="${area('coles')}" fill="url(#gc)"/>
+    <path d="${area('woolworths')}" fill="url(#gw)"/>
+    <path d="${line('coles')}" fill="none" stroke="#e2001a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${line('woolworths')}" fill="none" stroke="#007b3e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${xS(li).toFixed(1)}" cy="${yS(history[li].coles).toFixed(1)}" r="5" fill="#e2001a" stroke="#fff" stroke-width="2"/>
+    <circle cx="${xS(li).toFixed(1)}" cy="${yS(history[li].woolworths).toFixed(1)}" r="5" fill="#007b3e" stroke="#fff" stroke-width="2"/>
+  </svg>`;
+}
+
+function fmt(n) { return "$" + n.toFixed(2); }
+
+// ── Tab logic ──────────────────────────────────────────────────────────────
+function initTabs() {
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-" + target).classList.add("active");
+    });
+  });
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render(product) {
+  const history = generateHistory(product);
+  const allC = history.map(h => h.coles), allW = history.map(h => h.woolworths);
+  const minC = Math.min(...allC), maxC = Math.max(...allC), avgC = allC.reduce((a,b)=>a+b,0)/allC.length;
+  const minW = Math.min(...allW), maxW = Math.max(...allW), avgW = allW.reduce((a,b)=>a+b,0)/allW.length;
+
+  const colesWins = product.coles < product.woolworths;
+  const woolWins  = product.woolworths < product.coles;
+  const tie = product.coles === product.woolworths;
+
+  // Nutrition tab
+  const nutritionTabContent = product.nutrition ? `
+    <p class="serving-note">Serving size: ${product.nutrition.servingSize}</p>
+    <div style="overflow-x:auto;">
+    <table class="nutrition-table">
+      <thead>
+        <tr>
+          <th>Nutrient</th>
+          <th>Per 100g/mL</th>
+          <th>Per Serving</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${product.nutrition.rows.map(r => `
+          <tr class="${r.label.startsWith('—') ? 'indent' : ''}">
+            <td>${r.label}</td>
+            <td>${r.per100}</td>
+            <td>${r.perServing}</td>
+          </tr>`).join("")}
+      </tbody>
+    </table>
+    </div>
+  ` : `<div class="na-box">Nutrition information is not applicable for this product.</div>`;
+
+  // Ingredients & Allergens tab
+  const hasIngredients = product.ingredients && !product.ingredients.startsWith("N/A");
+  const ingredientsContent = hasIngredients
+    ? `<div class="field-label">Ingredients</div>
+       <div class="ingredients-box">${product.ingredients}</div>`
+    : `<div class="na-box">Ingredient list not available for this product.</div>`;
+
+  const allergenChips = product.allergens.length
+    ? product.allergens.map(a => `<span class="chip chip-danger">⚠️ ${a}</span>`).join("")
+    : `<span class="chip chip-safe">✅ No major allergens listed</span>`;
+
+  const mayContainChips = product.mayContain && product.mayContain.length
+    ? product.mayContain.map(a => `<span class="chip chip-warn">⚠️ May contain: ${a}</span>`).join("")
+    : "";
+
+  // Alternatives tab
+  const altsHTML = product.alternatives.map(a => `
+    <div class="alt-item">
+      <div>
+        <div class="alt-name">${a.name}</div>
+        <div class="alt-note">${a.note}</div>
+      </div>
+      <div class="alt-price">${a.price}</div>
+    </div>`).join("");
+
+  // Where to buy tab
+  const storeClass = s => {
+    const m = { "Coles": "wtb-coles", "Woolworths": "wtb-woolworths", "Aldi": "wtb-aldi", "IGA": "wtb-iga" };
+    return m[s] || "";
+  };
+  const wtbHTML = product.whereToBuy.map(w => `
+    <div class="wtb-item ${storeClass(w.store)}">
+      <div class="wtb-left">
+        <span class="stock-dot ${w.inStock ? 'in' : 'out'}" title="${w.inStock ? 'In stock' : 'Out of stock'}"></span>
+        <div>
+          <div class="wtb-store">${w.store}</div>
+          <div class="wtb-aisle">${w.aisle}${w.inStock ? "" : " · Currently out of stock"}</div>
+        </div>
+      </div>
+      <div class="wtb-price">${fmt(w.price)}</div>
+    </div>`).join("");
+
+  document.title = `${product.name} — PriceCheck AU`;
+
+  document.getElementById("app").innerHTML = `
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-emoji">${product.image}</div>
+      <div class="hero-info">
+        <span class="hero-category">${product.category}</span>
+        <h1 class="hero-name">${product.name}</h1>
+        <p class="hero-unit">${product.unit}</p>
+        <p class="hero-desc">${product.description}</p>
+      </div>
+    </div>
+
+    <!-- Price strip -->
+    <div class="price-strip">
+      <div class="price-tile coles-tile${colesWins ? ' winner-tile' : ''}">
+        ${colesWins ? '<span class="best-badge">BEST PRICE</span>' : ''}
+        <div class="tile-store coles">🔴 Coles</div>
+        <div class="tile-price">${fmt(product.coles)}</div>
+        <div class="tile-verdict ${colesWins ? 'cheap' : woolWins ? 'expensive' : 'tie'}">
+          ${colesWins ? '✅ Cheapest right now' : woolWins ? `$${(product.coles - product.woolworths).toFixed(2)} more expensive` : 'Same as Woolworths'}
+        </div>
+      </div>
+      <div class="price-tile woolworths-tile${woolWins ? ' winner-tile' : ''}">
+        ${woolWins ? '<span class="best-badge">BEST PRICE</span>' : ''}
+        <div class="tile-store woolworths">🟢 Woolworths</div>
+        <div class="tile-price">${fmt(product.woolworths)}</div>
+        <div class="tile-verdict ${woolWins ? 'cheap' : colesWins ? 'expensive' : 'tie'}">
+          ${woolWins ? '✅ Cheapest right now' : colesWins ? `$${(product.woolworths - product.coles).toFixed(2)} more expensive` : 'Same as Coles'}
+        </div>
+      </div>
+    </div>
+
+    <!-- Price history -->
+    <div class="section-card">
+      <div class="section-heading">Price History — Last 12 Weeks</div>
+      <div class="chart-outer">${buildChart(history)}</div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--coles)"></div> Coles</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--woolworths)"></div> Woolworths</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-cell sc-coles"><div class="sc-label">Coles Low</div><div class="sc-val">${fmt(minC)}</div></div>
+        <div class="stat-cell sc-coles"><div class="sc-label">Coles High</div><div class="sc-val">${fmt(maxC)}</div></div>
+        <div class="stat-cell sc-coles"><div class="sc-label">Coles Avg</div><div class="sc-val">${fmt(avgC)}</div></div>
+        <div class="stat-cell sc-woolworths"><div class="sc-label">Woolies Low</div><div class="sc-val">${fmt(minW)}</div></div>
+        <div class="stat-cell sc-woolworths"><div class="sc-label">Woolies High</div><div class="sc-val">${fmt(maxW)}</div></div>
+        <div class="stat-cell sc-woolworths"><div class="sc-label">Woolies Avg</div><div class="sc-val">${fmt(avgW)}</div></div>
+      </div>
+    </div>
+
+    <!-- Tabbed details -->
+    <div class="tabs-wrap">
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="nutrition">🥗 Nutrition</button>
+        <button class="tab-btn" data-tab="ingredients">🧪 Ingredients &amp; Allergens</button>
+        <button class="tab-btn" data-tab="alternatives">🔄 Alternatives</button>
+        <button class="tab-btn" data-tab="wheretobuy">📍 Where to Buy</button>
+      </div>
+
+      <div id="tab-nutrition" class="tab-panel active">
+        ${nutritionTabContent}
+      </div>
+
+      <div id="tab-ingredients" class="tab-panel">
+        ${ingredientsContent}
+        <hr class="section-divider" />
+        <div class="field-label">Contains</div>
+        <div class="chip-list">${allergenChips}</div>
+        ${mayContainChips ? `<div class="field-label" style="margin-top:14px;">May Contain</div><div class="chip-list">${mayContainChips}</div>` : ""}
+      </div>
+
+      <div id="tab-alternatives" class="tab-panel">
+        <div class="alt-list">${altsHTML}</div>
+      </div>
+
+      <div id="tab-wheretobuy" class="tab-panel">
+        <div class="wtb-list">${wtbHTML}</div>
+      </div>
+    </div>
+
+    <p class="disclaimer">⚠️ <strong>Demo data only.</strong> Prices, nutrition, ingredients, and stock information are illustrative and may not reflect current real-world values. Always check the product label and store websites before purchasing.</p>
+  `;
+
+  initTabs();
+}
+
+// ── Bootstrap ──────────────────────────────────────────────────────────────
+const params    = new URLSearchParams(window.location.search);
+const token     = params.get("token");
+const name      = params.get("name");
+const urlPrice  = params.get("price") || null;
+const urlSource = params.get("source") || null;
+
+if (token) {
+  // Live mode — fetch real sellers from SerpAPI via our server
+  renderLive(token, name || "Product", urlPrice, urlSource);
+} else {
+  // Static mode — use demo data
+  const product = products.find(p => p.name === name);
+  if (!product) {
+    document.getElementById("app").innerHTML = `
+      <div style="text-align:center;padding:80px 20px;color:var(--muted);">
+        <div style="font-size:3rem;margin-bottom:12px;">🔍</div>
+        <h2 style="margin-bottom:8px;">Product not found</h2>
+        <p>We couldn't find "<strong>${name || "unknown"}</strong>".</p>
+        <a href="index.html" style="display:inline-block;margin-top:20px;padding:10px 20px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">← Back to all products</a>
+      </div>`;
+  } else {
+    render(product);
+  }
+}
+
+function clientStoreTag(name = '') {
+  const n = name.toLowerCase();
+  if (n.includes('coles'))      return 'coles';
+  if (n.includes('woolworths')) return 'woolworths';
+  if (n.includes('aldi'))       return 'aldi';
+  if (n.includes('iga'))        return 'iga';
+  return null;
+}
+
+function parseClientPrice(str) {
+  if (!str) return null;
+  const n = parseFloat(str.replace(/[^0-9.]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+async function renderLive(pageToken, productName, urlPrice, urlSource) {
+  document.title = `${productName} — PriceCheck AU`;
+
+  document.getElementById("app").innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:20px;text-align:center;">
+      <div style="width:28px;height:28px;border:3px solid var(--border);border-top-color:#6366f1;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 16px"></div>
+      <p style="color:var(--muted)">Fetching live prices…</p>
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+
+  try {
+    // Fetch product info + Coles/Woolworths comparison in parallel
+    const [sellersRes, compareRes] = await Promise.all([
+      fetch(`/api/sellers?token=${encodeURIComponent(pageToken)}`),
+      fetch(`/api/compare?q=${encodeURIComponent(productName)}`),
+    ]);
+    const data    = await sellersRes.json();
+    const cmpData = compareRes.ok ? await compareRes.json() : null;
+
+    if (data.error) throw new Error(data.error);
+
+    const { sellers = [], product: info } = data;
+    const title = info?.title || productName;
+    const img   = info?.images?.[0] ?? null;
+    const desc  = info?.description ?? null;
+
+    // Compare endpoint gives the most reliable Coles/Woolworths prices
+    const colesPrice = cmpData?.coles?.priceNum
+      ?? sellers.find(s => s.tag === 'coles')?.priceNum
+      ?? (clientStoreTag(urlSource || '') === 'coles' ? parseClientPrice(urlPrice) : null);
+    const woolPrice  = cmpData?.woolworths?.priceNum
+      ?? sellers.find(s => s.tag === 'woolworths')?.priceNum
+      ?? (clientStoreTag(urlSource || '') === 'woolworths' ? parseClientPrice(urlPrice) : null);
+    const colesLink  = cmpData?.coles?.link ?? null;
+    const woolLink   = cmpData?.woolworths?.link ?? null;
+
+    // If API returned no sellers, synthesize from compare or URL params
+    if (sellers.length === 0) {
+      if (cmpData?.coles)      sellers.push({ name: 'Coles',      price: cmpData.coles.price,      priceNum: colesPrice, link: colesLink, condition: 'New', tag: 'coles' });
+      if (cmpData?.woolworths) sellers.push({ name: 'Woolworths', price: cmpData.woolworths.price, priceNum: woolPrice,  link: woolLink,  condition: 'New', tag: 'woolworths' });
+      if (sellers.length === 0 && urlPrice && urlSource)
+        sellers.push({ name: urlSource, price: urlPrice, priceNum: parseClientPrice(urlPrice), link: null, condition: 'New', tag: clientStoreTag(urlSource) });
+    }
+
+    const cheapest = sellers.reduce((min, s) => (!min || (s.priceNum ?? 9999) < (min.priceNum ?? 9999)) ? s : min, null);
+
+    const storeCls = tag => {
+      const m = { coles:'wtb-coles', woolworths:'wtb-woolworths', aldi:'wtb-aldi', iga:'wtb-iga' };
+      return m[tag] || '';
+    };
+
+    const sellersHTML = sellers.map(s => `
+      <div class="wtb-item ${storeCls(s.tag)}">
+        <div class="wtb-left">
+          <span class="stock-dot in"></span>
+          <div>
+            <div class="wtb-store">${s.name}</div>
+            <div class="wtb-aisle">${s.condition ?? 'New'}${s.totalPrice ? ` · Total: ${s.totalPrice}` : ''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="wtb-price">${s.price ?? '—'}</div>
+          ${s.link ? `<a href="${s.link}" target="_blank" rel="noopener" style="font-size:0.78rem;padding:5px 10px;background:#6366f1;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;white-space:nowrap">Buy →</a>` : ''}
+        </div>
+      </div>`).join('');
+
+    const specsHTML = info?.specs?.length ? `
+      <div class="section-card">
+        <div class="section-heading">Specifications</div>
+        <table style="width:100%;border-collapse:collapse;font-size:0.88rem">
+          ${info.specs.map(s => `
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:8px 0;color:var(--muted);width:40%">${s.name}</td>
+              <td style="padding:8px 0;font-weight:500">${s.value}</td>
+            </tr>`).join('')}
+        </table>
+      </div>` : '';
+
+    const highlightsHTML = info?.highlights?.length ? `
+      <ul style="margin:0;padding-left:20px;line-height:1.9;font-size:0.9rem">
+        ${info.highlights.map(h => `<li>${h}</li>`).join('')}
+      </ul>` : '';
+
+    document.title = `${title} — PriceCheck AU`;
+    document.getElementById("app").innerHTML = `
+      <div class="hero">
+        ${img ? `<img src="${img}" alt="" style="width:100px;height:100px;object-fit:contain;border-radius:10px;border:1px solid var(--border);flex-shrink:0;background:#f9fafb">` : '<div class="hero-emoji">🛒</div>'}
+        <div class="hero-info">
+          <span class="hero-category">Live Prices</span>
+          <h1 class="hero-name">${title}</h1>
+          ${cheapest ? `<p style="font-size:0.9rem;color:var(--muted);margin-top:6px">Cheapest: <strong style="color:#16a34a">${cheapest.price}</strong> at ${cheapest.name}</p>` : ''}
+          ${desc ? `<p class="hero-desc" style="margin-top:10px">${desc}</p>` : ''}
+          <button class="save-btn" id="save-btn" style="margin-top:14px" onclick="saveToCatalog()">
+            ＋ Save to Catalog
+          </button>
+        </div>
+      </div>
+
+      ${(colesPrice || woolPrice) ? `
+      <div class="price-strip">
+        <div class="price-tile coles-tile${colesPrice && (!woolPrice || colesPrice < woolPrice) ? ' winner-tile' : ''}">
+          ${colesPrice && (!woolPrice || colesPrice < woolPrice) ? '<span class="best-badge">BEST PRICE</span>' : ''}
+          <div class="tile-store coles">🔴 Coles</div>
+          <div class="tile-price">${colesPrice ? '$' + colesPrice.toFixed(2) : '—'}</div>
+          <div class="tile-verdict ${colesPrice && woolPrice ? (colesPrice < woolPrice ? 'cheap' : 'expensive') : 'tie'}">
+            ${colesPrice ? (woolPrice ? (colesPrice < woolPrice ? '✅ Cheaper' : `$${(colesPrice - woolPrice).toFixed(2)} more`) : 'Only available here') : 'Not listed'}
+          </div>
+          ${colesLink ? `<a href="${colesLink}" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;font-size:0.78rem;padding:5px 12px;background:#6366f1;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Buy at Coles →</a>` : ''}
+        </div>
+        <div class="price-tile woolworths-tile${woolPrice && (!colesPrice || woolPrice < colesPrice) ? ' winner-tile' : ''}">
+          ${woolPrice && (!colesPrice || woolPrice < colesPrice) ? '<span class="best-badge">BEST PRICE</span>' : ''}
+          <div class="tile-store woolworths">🟢 Woolworths</div>
+          <div class="tile-price">${woolPrice ? '$' + woolPrice.toFixed(2) : '—'}</div>
+          <div class="tile-verdict ${colesPrice && woolPrice ? (woolPrice < colesPrice ? 'cheap' : 'expensive') : 'tie'}">
+            ${woolPrice ? (colesPrice ? (woolPrice < colesPrice ? '✅ Cheaper' : `$${(woolPrice - colesPrice).toFixed(2)} more`) : 'Only available here') : 'Not listed'}
+          </div>
+          ${woolLink ? `<a href="${woolLink}" target="_blank" rel="noopener" style="display:inline-block;margin-top:10px;font-size:0.78rem;padding:5px 12px;background:#6366f1;color:#fff;border-radius:6px;text-decoration:none;font-weight:600">Buy at Woolworths →</a>` : ''}
+        </div>
+      </div>` : ''}
+
+      <div class="section-card">
+        <div class="section-heading">All Sellers (${sellers.length})</div>
+        <div class="wtb-list">
+          ${sellersHTML || '<p style="color:var(--muted)">No seller data found.</p>'}
+        </div>
+      </div>
+
+      ${highlightsHTML ? `<div class="section-card"><div class="section-heading">Highlights</div>${highlightsHTML}</div>` : ''}
+      ${specsHTML}
+
+      <p class="disclaimer">Prices sourced live from Google Shopping via SerpAPI. Always verify before purchasing.</p>
+    `;
+
+    // Store data needed by saveToCatalog in closure-accessible vars
+    window._catalogEntry = {
+      name:        title,
+      category:    inferCategory(title),
+      unit:        'each',
+      coles:       colesPrice ?? null,
+      woolworths:  woolPrice  ?? null,
+      image:       img,
+      token:       pageToken,
+      liveData:    true,
+    };
+
+  } catch (err) {
+    document.getElementById("app").innerHTML = `
+      <div style="padding:24px;background:#fee2e2;border:1px solid #fca5a5;border-radius:var(--radius);color:#991b1b;margin-bottom:20px">
+        ⚠️ Failed to load live prices: ${err.message}
+      </div>
+      <a href="index.html" style="display:inline-block;padding:10px 20px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">← Back</a>`;
+  }
+}
+
+// ── Catalog helpers ────────────────────────────────────────────────────────
+
+function inferCategory(title = '') {
+  const t = title.toLowerCase();
+  if (/dog|cat|pet|kibble|pedigree|whiskas|purina|supercoat/.test(t)) return 'Pet Food';
+  if (/milk|cheese|yoghurt|butter|cream/.test(t))  return 'Dairy';
+  if (/bread|roll|bun|croissant/.test(t))           return 'Bakery';
+  if (/chicken|beef|pork|lamb|mince|steak/.test(t)) return 'Meat';
+  if (/rice|pasta|flour|sugar|oil|sauce/.test(t))   return 'Pantry';
+  if (/juice|water|coffee|tea|drink/.test(t))        return 'Beverages';
+  if (/chips|chocolate|nut|snack|biscuit|bar/.test(t)) return 'Snacks';
+  if (/detergent|cleaner|paper|tablet|powder/.test(t)) return 'Household';
+  if (/frozen|ice cream|peas|pizza/.test(t))         return 'Frozen';
+  if (/apple|banana|orange|veg|tomato|carrot/.test(t)) return 'Fruit & Veg';
+  return 'Other';
+}
+
+function showToast(msg, duration = 2800) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+async function saveToCatalog() {
+  const btn = document.getElementById('save-btn');
+  if (!btn || !window._catalogEntry) return;
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    const res = await fetch('/api/catalog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(window._catalogEntry),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    btn.textContent = '✓ Saved to Catalog';
+    btn.classList.add('saved');
+    showToast('✓ Added to your catalog! View it on the home page.');
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = '＋ Save to Catalog';
+    showToast('⚠️ Could not save: ' + err.message);
+  }
+}
+</script>
+</body>
+</html>

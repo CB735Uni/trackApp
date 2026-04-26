@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supermarket Price Comparison — AU</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --coles: #e2001a;
+      --coles-light: #fff0f1;
+      --woolworths: #007b3e;
+      --woolworths-light: #f0fff6;
+      --win: #ffd700;
+      --bg: #f4f5f7;
+      --card: #fff;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .badge-demo { background: #fef3c7; color: #92400e; }
+
+    .search-wrap {
+      flex: 1;
+      min-width: 220px;
+      max-width: 480px;
+      position: relative;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+    }
+
+    input[type="search"] {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="search"]:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      background: var(--card);
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--text);
+    }
+
+    .filter-btn:hover { border-color: #6366f1; color: #6366f1; }
+    .filter-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px;
+    }
+
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+
+    .stat-card .label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .stat-card .value { font-size: 1.5rem; font-weight: 700; }
+    .stat-card.coles .value { color: var(--coles); }
+    .stat-card.woolworths .value { color: var(--woolworths); }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    .table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      background: #f9fafb;
+      border-bottom: 1px solid var(--border);
+    }
+
+    thead th.coles-col { color: var(--coles); }
+    thead th.woolworths-col { color: var(--woolworths); }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f9fafb; }
+
+    td { padding: 13px 16px; vertical-align: middle; }
+
+    .product-name { font-weight: 600; }
+    .product-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    .category-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #ede9fe;
+      color: #6d28d9;
+      font-weight: 500;
+    }
+
+    .price { font-weight: 700; font-size: 1.05rem; }
+
+    .price-cell { position: relative; }
+
+    .price-cell.winner { background: var(--win); background: linear-gradient(135deg, #fef9c3, #fde68a); }
+
+    .winner-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      background: #854d0e;
+      color: #fef9c3;
+      padding: 2px 6px;
+      border-radius: 99px;
+      margin-left: 6px;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+
+    .saving {
+      font-size: 0.75rem;
+      color: #16a34a;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .no-results svg { margin-bottom: 12px; opacity: 0.4; }
+
+    .disclaimer {
+      margin-top: 24px;
+      padding: 14px 18px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      color: #92400e;
+      line-height: 1.6;
+    }
+
+    .tie-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      background: #e5e7eb;
+      color: #374151;
+      padding: 2px 6px;
+      border-radius: 99px;
+      margin-left: 6px;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+
+    tbody tr { cursor: pointer; }
+    tbody tr:hover { background: #f0f1ff !important; }
+
+    /* Live search */
+    .live-search-form { display: flex; flex: 1; gap: 8px; align-items: center; min-width: 0; }
+    .live-wrap { flex: 1; max-width: 560px; }
+    .live-btn {
+      padding: 10px 18px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .live-btn:hover { background: #4f46e5; }
+    .live-btn:disabled { background: #a5b4fc; cursor: default; }
+
+    .live-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+      padding-bottom: 28px;
+    }
+
+    .live-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .live-card:hover { box-shadow: 0 4px 16px rgba(99,102,241,0.15); border-color: #a5b4fc; }
+
+    .live-card img {
+      width: 80px; height: 80px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #f9fafb;
+      align-self: center;
+      border: 1px solid var(--border);
+    }
+    .live-card .lc-title { font-size: 0.88rem; font-weight: 600; line-height: 1.4; }
+    .live-card .lc-price { font-size: 1.1rem; font-weight: 800; color: #4f46e5; }
+    .live-card .lc-source { font-size: 0.75rem; color: var(--muted); }
+    .live-card .lc-badge {
+      display: inline-flex;
+      gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #dbeafe;
+      color: #1e40af;
+      align-self: flex-start;
+    }
+
+    .live-spinner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 40px 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .live-spinner::before {
+      content: '';
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .live-error {
+      padding: 20px;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      color: #991b1b;
+      font-size: 0.88rem;
+      margin-bottom: 20px;
+    }
+
+    /* Compare strip */
+    .compare-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .compare-tile {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      position: relative;
+    }
+    .compare-tile.winner-tile { border-color: #fbbf24; background: linear-gradient(135deg,#fffbeb,#fef9c3); }
+    .compare-tile.coles-tile  { border-top: 4px solid var(--coles); }
+    .compare-tile.wool-tile   { border-top: 4px solid var(--woolworths); }
+    .ct-store { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    .ct-store.coles { color: var(--coles); }
+    .ct-store.wool  { color: var(--woolworths); }
+    .ct-price { font-size: 2rem; font-weight: 800; }
+    .ct-title { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+    .ct-verdict { font-size: 0.78rem; margin-top: 6px; }
+    .ct-verdict.cheap { color: #16a34a; font-weight: 600; }
+    .ct-verdict.pricey { color: var(--muted); }
+    .ct-best {
+      position: absolute; top: 10px; right: 10px;
+      background: #fbbf24; color: #78350f;
+      font-size: 0.62rem; font-weight: 700;
+      padding: 2px 7px; border-radius: 99px; letter-spacing: .05em;
+    }
+    .ct-link {
+      display: inline-block; margin-top: 8px;
+      font-size: 0.75rem; font-weight: 600;
+      padding: 4px 10px; background: #6366f1; color: #fff;
+      border-radius: 6px; text-decoration: none;
+    }
+    .ct-save {
+      display: inline-block; margin-top: 8px; margin-left: 6px;
+      font-size: 0.75rem; font-weight: 600;
+      padding: 4px 10px; background: #16a34a; color: #fff;
+      border: none; border-radius: 6px; cursor: pointer;
+    }
+    .ct-save.saved { background: #6366f1; }
+    @media (max-width:560px) { .compare-strip { grid-template-columns: 1fr; } }
+
+    @media (max-width: 640px) {
+      .live-search-form { flex-wrap: wrap; }
+      .live-btn { width: 100%; }
+    }
+
+    @media (max-width: 640px) {
+      table { font-size: 0.82rem; }
+      td, thead th { padding: 10px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🛒 PriceCheck AU</div>
+  <form class="live-search-form" id="live-form">
+    <div class="search-wrap live-wrap">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="search" id="live-input" placeholder="Search any product (e.g. Weet-Bix 1.2kg)…" autocomplete="off" />
+    </div>
+    <button type="submit" class="live-btn">Search Live Prices</button>
+  </form>
+</header>
+
+<!-- Live results (shown after a live search) -->
+<div id="live-section" style="display:none">
+  <div style="max-width:1100px;margin:0 auto;padding:20px 20px 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <p id="live-heading" style="font-weight:600;font-size:0.95rem"></p>
+      <button id="live-clear" class="filter-btn">✕ Back to browse</button>
+    </div>
+    <!-- Compare strip (Coles vs Woolworths) -->
+    <div id="compare-strip" style="display:none" class="compare-strip"></div>
+    <div id="live-grid" class="live-grid"></div>
+  </div>
+</div>
+
+<!-- Static browse (hidden during live search) -->
+<div id="static-section">
+<main>
+  <div class="summary-bar" id="summary"></div>
+  <p class="section-title" id="count-label"></p>
+  <div class="search-wrap" style="max-width:400px;margin-bottom:16px">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="search" id="search" placeholder="Filter demo products…" autocomplete="off" />
+  </div>
+  <div class="filters" id="filters" style="margin-bottom:16px"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th class="coles-col">🔴 Coles</th>
+          <th class="woolworths-col">🟢 Woolworths</th>
+          <th>Saving</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <p class="disclaimer">
+    ⚠️ <strong>Demo data below.</strong> Use the search bar above to look up <strong>real live prices</strong> from Google Shopping.
+  </p>
+</main>
+</div>
+
+<script src="data.js"></script>
+<script>
+
+const categories = ["All", ...new Set(products.map(p => p.category))];
+
+let activeCategory = "All";
+let searchQuery = "";
+
+function fmt(n) { return "$" + n.toFixed(2); }
+
+function buildFilters() {
+  const wrap = document.getElementById("filters");
+  categories.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn" + (cat === "All" ? " active" : "");
+    btn.textContent = cat;
+    btn.addEventListener("click", () => {
+      activeCategory = cat;
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      render();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+function buildSummary(filtered) {
+  let colesWins = 0, woolworthsWins = 0, ties = 0;
+  filtered.forEach(p => {
+    if (p.coles < p.woolworths) colesWins++;
+    else if (p.woolworths < p.coles) woolworthsWins++;
+    else ties++;
+  });
+
+  const totalSaving = filtered.reduce((acc, p) => {
+    return acc + Math.abs(p.coles - p.woolworths);
+  }, 0);
+
+  document.getElementById("summary").innerHTML = `
+    <div class="stat-card">
+      <div class="label">Products Compared</div>
+      <div class="value">${filtered.length}</div>
+    </div>
+    <div class="stat-card coles">
+      <div class="label">🔴 Coles Cheaper</div>
+      <div class="value">${colesWins}</div>
+    </div>
+    <div class="stat-card woolworths">
+      <div class="label">🟢 Woolworths Cheaper</div>
+      <div class="value">${woolworthsWins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Max Possible Saving</div>
+      <div class="value">$${totalSaving.toFixed(2)}</div>
+    </div>
+  `;
+}
+
+function render() {
+  const q = searchQuery.toLowerCase();
+  const filtered = products.filter(p => {
+    const matchCat = activeCategory === "All" || p.category === activeCategory;
+    const matchSearch = !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+    return matchCat && matchSearch;
+  });
+
+  buildSummary(filtered);
+
+  document.getElementById("count-label").textContent =
+    `${filtered.length} product${filtered.length !== 1 ? "s" : ""} shown`;
+
+  const tbody = document.getElementById("tbody");
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5">
+      <div class="no-results">
+        <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <br/>No products match your search.
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => {
+    const colesWins = p.coles < p.woolworths;
+    const woolworthsWins = p.woolworths < p.coles;
+    const tie = p.coles === p.woolworths;
+    const saving = Math.abs(p.coles - p.woolworths);
+    const winner = colesWins ? "Coles" : woolworthsWins ? "Woolworths" : null;
+
+    const colesCellClass = colesWins ? " winner" : "";
+    const woolworthsCellClass = woolworthsWins ? " winner" : "";
+
+    return `<tr>
+      <td>
+        <div class="product-name">${p.name}</div>
+        <div class="product-meta">${p.unit}</div>
+      </td>
+      <td><span class="category-tag">${p.category}</span></td>
+      <td class="price-cell${colesCellClass}">
+        <span class="price">${fmt(p.coles)}</span>
+        ${colesWins ? '<span class="winner-badge">BEST</span>' : ''}
+        ${tie ? '<span class="tie-badge">SAME</span>' : ''}
+      </td>
+      <td class="price-cell${woolworthsCellClass}">
+        <span class="price">${fmt(p.woolworths)}</span>
+        ${woolworthsWins ? '<span class="winner-badge">BEST</span>' : ''}
+        ${tie ? '<span class="tie-badge">SAME</span>' : ''}
+      </td>
+      <td>
+        ${tie
+          ? '<span style="color:var(--muted);font-size:0.82rem;">—</span>'
+          : `<div class="saving">Save ${fmt(saving)}</div>
+             <div style="font-size:0.75rem;color:var(--muted);">buy at ${winner}</div>`
+        }
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+document.getElementById("search").addEventListener("input", e => {
+  searchQuery = e.target.value;
+  render();
+});
+
+document.getElementById("tbody").addEventListener("click", e => {
+  const row = e.target.closest("tr");
+  if (!row) return;
+  const nameEl = row.querySelector(".product-name");
+  if (!nameEl) return;
+  window.location.href = "product.html?name=" + encodeURIComponent(nameEl.textContent.trim());
+});
+
+buildFilters();
+render();
+loadCatalog();
+
+// ── Catalog ───────────────────────────────────────────────────────────────
+
+let catalogItems = [];
+
+async function loadCatalog() {
+  try {
+    const res = await fetch('/api/catalog');
+    if (!res.ok || res.headers.get('content-type')?.includes('text/html')) return;
+    catalogItems = await res.json();
+    if (catalogItems.length) renderCatalog();
+  } catch { /* server not running — silently skip */ }
+}
+
+function renderCatalog() {
+  const existing = document.getElementById('catalog-section');
+  if (existing) existing.remove();
+
+  const section = document.createElement('div');
+  section.id = 'catalog-section';
+  section.style.cssText = 'max-width:1100px;margin:0 auto;padding:0 20px 28px';
+
+  const rows = catalogItems.map(p => {
+    const colesWins = p.coles != null && p.woolworths != null && p.coles < p.woolworths;
+    const woolWins  = p.coles != null && p.woolworths != null && p.woolworths < p.coles;
+    const saving    = (p.coles != null && p.woolworths != null) ? Math.abs(p.coles - p.woolworths) : null;
+    const fmtP = v => v != null ? '$' + v.toFixed(2) : '—';
+    return `<tr style="cursor:pointer" onclick="window.location.href='product.html?token=${encodeURIComponent(p.token || '')}&name=${encodeURIComponent(p.name)}'">
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${p.image ? `<img src="${p.image}" style="width:36px;height:36px;object-fit:contain;border-radius:6px;border:1px solid var(--border);background:#f9fafb" alt="">` : ''}
+          <div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-meta">${p.unit ?? 'each'}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="category-tag">${p.category}</span></td>
+      <td class="price-cell${colesWins ? ' winner' : ''}">
+        <span class="price">${fmtP(p.coles)}</span>
+        ${colesWins ? '<span class="winner-badge">BEST</span>' : ''}
+      </td>
+      <td class="price-cell${woolWins ? ' winner' : ''}">
+        <span class="price">${fmtP(p.woolworths)}</span>
+        ${woolWins ? '<span class="winner-badge">BEST</span>' : ''}
+      </td>
+      <td>
+        ${saving != null
+          ? `<div class="saving">Save $${saving.toFixed(2)}</div><div style="font-size:0.75rem;color:var(--muted)">buy at ${colesWins ? 'Coles' : 'Woolworths'}</div>`
+          : '<span style="color:var(--muted);font-size:0.82rem;">—</span>'}
+      </td>
+      <td>
+        <button onclick="event.stopPropagation();removeCatalogItem('${p.name.replace(/'/g,"\\'")}',this)"
+          style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:4px 8px;border-radius:4px"
+          title="Remove from catalog">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  section.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <p class="section-title" style="margin:0">⭐ My Catalog (${catalogItems.length} saved)</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th><th>Category</th>
+            <th class="coles-col">🔴 Coles</th>
+            <th class="woolworths-col">🟢 Woolworths</th>
+            <th>Saving</th><th></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+
+  const main = document.querySelector('#static-section main');
+  main.insertBefore(section, main.firstChild);
+}
+
+async function removeCatalogItem(name, btn) {
+  btn.textContent = '…';
+  try {
+    await fetch(`/api/catalog/${encodeURIComponent(name)}`, { method: 'DELETE' });
+    catalogItems = catalogItems.filter(p => p.name !== name);
+    renderCatalog();
+  } catch (e) {
+    btn.textContent = '✕';
+  }
+}
+
+// ── Live search ───────────────────────────────────────────────────────────
+
+const liveForm    = document.getElementById('live-form');
+const liveInput   = document.getElementById('live-input');
+const liveSection = document.getElementById('live-section');
+const liveGrid    = document.getElementById('live-grid');
+const liveHeading = document.getElementById('live-heading');
+const liveBtn     = document.querySelector('.live-btn');
+const liveClear   = document.getElementById('live-clear');
+const staticSect  = document.getElementById('static-section');
+
+function showLive() {
+  liveSection.style.display = 'block';
+  staticSect.style.display  = 'none';
+}
+function showStatic() {
+  liveSection.style.display = 'none';
+  staticSect.style.display  = 'block';
+}
+
+liveClear.addEventListener('click', () => {
+  liveInput.value = '';
+  showStatic();
+});
+
+liveForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const q = liveInput.value.trim();
+  if (!q) return;
+
+  showLive();
+  liveHeading.textContent = `Live results for "${q}"`;
+  liveGrid.innerHTML = '<div class="live-spinner">Searching Google Shopping…</div>';
+  document.getElementById('compare-strip').style.display = 'none';
+  liveBtn.disabled = true;
+
+  try {
+    const checkRes = r => {
+      if (!r.ok || r.headers.get('content-type')?.includes('text/html'))
+        throw new Error('Server not reachable. Make sure you started it with: npm start');
+    };
+
+    // Fire search + compare in parallel
+    const [searchRes, compareRes] = await Promise.all([
+      fetch(`/api/search?q=${encodeURIComponent(q)}`),
+      fetch(`/api/compare?q=${encodeURIComponent(q)}`),
+    ]);
+    checkRes(searchRes);
+
+    const { results, error } = await searchRes.json();
+    if (error) throw new Error(error);
+
+    // Render compare strip if we got Coles or Woolworths prices
+    if (compareRes.ok) {
+      const cmp = await compareRes.json();
+      renderCompareStrip(cmp, q);
+    }
+
+    if (!results || results.length === 0) {
+      liveGrid.innerHTML = '<p style="color:var(--muted);padding:20px 0">No results found. Try a different search term.</p>';
+      return;
+    }
+
+    liveGrid.innerHTML = results.map(r => {
+      const dest = r.token
+        ? `product.html?token=${encodeURIComponent(r.token)}&name=${encodeURIComponent(r.title)}&price=${encodeURIComponent(r.price || '')}&source=${encodeURIComponent(r.source || '')}`
+        : (r.link || '#');
+      const target = r.token ? '' : 'target="_blank" rel="noopener"';
+      const multiLabel = r.multiSeller ? '<span class="lc-badge">🏪 Multiple sellers</span>' : '';
+      const stars = r.rating ? `⭐ ${r.rating}${r.reviews ? ` (${r.reviews.toLocaleString()})` : ''}` : '';
+      return `<a class="live-card" href="${dest}" ${target}>
+        ${r.thumbnail ? `<img src="${r.thumbnail}" alt="" loading="lazy"/>` : ''}
+        <div class="lc-title">${r.title}</div>
+        <div class="lc-price">${r.price ?? '—'}</div>
+        <div class="lc-source">${r.source ?? ''}${stars ? ' · ' + stars : ''}</div>
+        ${multiLabel}
+      </a>`;
+    }).join('');
+
+  } catch (err) {
+    liveGrid.innerHTML = `<div class="live-error">⚠️ ${err.message}</div>`;
+  } finally {
+    liveBtn.disabled = false;
+  }
+});
+
+function renderCompareStrip(cmp, q) {
+  const strip = document.getElementById('compare-strip');
+  const { coles, woolworths } = cmp;
+  if (!coles && !woolworths) { strip.style.display = 'none'; return; }
+
+  const cp = coles?.priceNum, wp = woolworths?.priceNum;
+  const colesWins = cp != null && (wp == null || cp < wp);
+  const woolWins  = wp != null && (cp == null || wp < cp);
+  const saving    = (cp != null && wp != null) ? Math.abs(cp - wp).toFixed(2) : null;
+
+  const tile = (data, cls, storeLbl, storeColor, isWinner, otherPrice) => {
+    if (!data) return `
+      <div class="compare-tile ${cls}">
+        <div class="ct-store ${storeColor}">${storeLbl}</div>
+        <div class="ct-price" style="color:var(--muted);font-size:1.1rem">Not found</div>
+      </div>`;
+    const diff = (otherPrice != null && data.priceNum != null)
+      ? (data.priceNum < otherPrice ? `✅ Save $${(otherPrice - data.priceNum).toFixed(2)}` : `$${(data.priceNum - otherPrice).toFixed(2)} more`)
+      : '';
+    return `
+      <div class="compare-tile ${cls}${isWinner ? ' winner-tile' : ''}">
+        ${isWinner ? '<span class="ct-best">BEST PRICE</span>' : ''}
+        <div class="ct-store ${storeColor}">${storeLbl}</div>
+        <div class="ct-price">${data.price ?? '—'}</div>
+        <div class="ct-title">${data.title ?? ''}</div>
+        ${diff ? `<div class="ct-verdict ${isWinner ? 'cheap' : 'pricey'}">${diff}</div>` : ''}
+        <div>
+          ${data.link ? `<a class="ct-link" href="${data.link}" target="_blank" rel="noopener">Buy →</a>` : ''}
+          <button class="ct-save" id="save-${cls}" onclick="saveCompare(${JSON.stringify({ name: q, coles: cp ?? null, woolworths: wp ?? null, image: coles?.thumbnail ?? woolworths?.thumbnail ?? null, category: 'Other', unit: 'each', liveData: true })}, '${cls}', this)">＋ Save</button>
+        </div>
+      </div>`;
+  };
+
+  strip.innerHTML =
+    tile(coles,      'coles-tile', '🔴 Coles',      'coles', colesWins, wp) +
+    tile(woolworths, 'wool-tile',  '🟢 Woolworths', 'wool',  woolWins,  cp);
+
+  strip.style.display = 'grid';
+}
+
+async function saveCompare(entry, tileId, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    const res = await fetch('/api/catalog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+    });
+    if (!res.ok) throw new Error();
+    btn.textContent = '✓ Saved';
+    btn.classList.add('saved');
+    catalogItems = [];
+    loadCatalog();
+  } catch {
+    btn.disabled = false;
+    btn.textContent = '＋ Save';
+  }
+}
+</script>
+</body>
+</html>
